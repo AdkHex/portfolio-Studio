@@ -12,6 +12,16 @@ import type {
 
 const apiBaseUrl = (import.meta.env.VITE_API_BASE_URL || "").replace(/\/$/, "");
 
+export class ApiError extends Error {
+  status: number;
+
+  constructor(message: string, status: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
+
 function withApi(path: string): string {
   if (!apiBaseUrl) {
     return path;
@@ -63,7 +73,7 @@ async function request<T>(url: string, init?: RequestInit): Promise<T> {
 
   if (!response.ok) {
     const payload = await response.json().catch(() => ({}));
-    throw new Error(payload.error || `Request failed: ${response.status}`);
+    throw new ApiError(payload.error || `Request failed: ${response.status}`, response.status);
   }
 
   return response.json() as Promise<T>;

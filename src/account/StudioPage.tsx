@@ -1,7 +1,7 @@
 import { FormEvent, useEffect, useMemo, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { Plus, RefreshCw, Trash2 } from "lucide-react";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import type { AccountBillingOrder, AccountBillingSummary, AccountSessionUser, AccountSite, Project, SiteSettings } from "@/types/cms";
 
 const SELECTED_SITE_KEY = "studio-selected-site-id";
@@ -42,8 +42,12 @@ export default function StudioPage() {
       if (resolved) {
         setContent(await api.accountSiteContent(resolved));
       }
-    } catch {
-      navigate("/studio/login", { replace: true });
+    } catch (loadError) {
+      if (loadError instanceof ApiError && loadError.status === 401) {
+        navigate("/studio/login", { replace: true });
+        return;
+      }
+      setError(loadError instanceof Error ? loadError.message : "Failed to load studio.");
     } finally {
       setLoading(false);
     }

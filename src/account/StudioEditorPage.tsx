@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type ComponentType, type ReactNode } from "react";
 import { ArrowDown, ArrowUp, FolderKanban, Inbox, Link2, Mail, Plus, RefreshCw, Save, Settings, Trash2, Upload } from "lucide-react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 import { bumpContentVersion } from "@/lib/content-sync";
 import { PORTFOLIO_THEMES } from "@/lib/portfolio-themes";
 import type { AccountSite, ContactMessage, Project, SiteSettings } from "@/types/cms";
@@ -91,8 +91,12 @@ export default function StudioEditorPage() {
       lastSavedSettingsRef.current = JSON.stringify(sanitizeSettings(content.settings));
       setAutoSaveState("idle");
       setAutoSaveMessage("");
-    } catch {
-      navigate("/studio/login", { replace: true });
+    } catch (loadError) {
+      if (loadError instanceof ApiError && loadError.status === 401) {
+        navigate("/studio/login", { replace: true });
+        return;
+      }
+      setError(loadError instanceof Error ? loadError.message : "Failed to load editor.");
     } finally {
       setLoading(false);
     }
