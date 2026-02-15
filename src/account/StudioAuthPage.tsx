@@ -27,7 +27,7 @@ export default function StudioAuthPage({ mode }: Props) {
       if (mode === "signup") {
         const signup = await api.accountSignup({ name: name.trim(), email: email.trim(), password });
         if (signup.requiresEmailVerification) {
-          setNotice("Verification email sent. Please check your inbox before signing in.");
+          navigate(`/studio/verify-email?email=${encodeURIComponent(email.trim())}`, { replace: true });
           return;
         }
         const plan = searchParams.get("plan");

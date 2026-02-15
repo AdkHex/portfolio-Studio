@@ -5,14 +5,17 @@ import { api } from "@/lib/api";
 export default function StudioVerifyEmailPage() {
   const navigate = useNavigate();
   const [searchParams] = useSearchParams();
-  const [state, setState] = useState<"loading" | "success" | "error">("loading");
+  const [state, setState] = useState<"loading" | "success" | "error" | "pending">("loading");
   const [message, setMessage] = useState("Verifying your email...");
+  const [sending, setSending] = useState(false);
+  const [resendMessage, setResendMessage] = useState("");
 
   useEffect(() => {
     const token = searchParams.get("token") || "";
+    const email = searchParams.get("email") || "";
     if (!token) {
-      setState("error");
-      setMessage("Missing verification token.");
+      setState("pending");
+      setMessage(email ? `We sent a verification email to ${email}.` : "We sent a verification email. Please check your inbox.");
       return;
     }
 
@@ -28,6 +31,25 @@ export default function StudioVerifyEmailPage() {
         setMessage(error instanceof Error ? error.message : "Verification failed.");
       });
   }, [navigate, searchParams]);
+
+  const resend = async () => {
+    const email = (searchParams.get("email") || "").trim();
+    if (!email) {
+      setResendMessage("Missing email address. Go back and sign up again.");
+      return;
+    }
+
+    setSending(true);
+    setResendMessage("");
+    try {
+      await api.accountResendVerification({ email });
+      setResendMessage("Verification email sent again. Check inbox and spam.");
+    } catch (error) {
+      setResendMessage(error instanceof Error ? error.message : "Could not resend verification email.");
+    } finally {
+      setSending(false);
+    }
+  };
 
   return (
     <div className="relative flex min-h-screen items-center justify-center overflow-hidden bg-background px-6 py-10">
@@ -45,6 +67,19 @@ export default function StudioVerifyEmailPage() {
         <p className={`mt-4 text-sm leading-relaxed ${state === "error" ? "text-destructive" : state === "success" ? "text-emerald-400" : "text-muted-foreground"}`}>
           {message}
         </p>
+        {state === "pending" ? (
+          <div className="mt-5">
+            <button
+              type="button"
+              onClick={resend}
+              disabled={sending}
+              className="inline-flex h-10 items-center rounded-xl border border-border/70 px-4 text-sm font-semibold text-foreground transition hover:border-primary/60 disabled:opacity-65"
+            >
+              {sending ? "Sending..." : "Resend Verification Email"}
+            </button>
+            {resendMessage ? <p className="mt-2 text-xs text-muted-foreground">{resendMessage}</p> : null}
+          </div>
+        ) : null}
         <div className="mt-6">
           <Link to="/studio/login" className="inline-flex h-10 items-center rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground">
             Go to Sign In
@@ -54,4 +89,3 @@ export default function StudioVerifyEmailPage() {
     </div>
   );
 }
-
