@@ -4,6 +4,14 @@
   "cleanUrls": true,
   "rewrites": [
     {
+      "source": "/api/:path*",
+      "destination": "https://ltd-leland-adkhex-a2e557e5.koyeb.app/api/:path*"
+    },
+    {
+      "source": "/uploads/:path*",
+      "destination": "https://ltd-leland-adkhex-a2e557e5.koyeb.app/uploads/:path*"
+    },
+    {
       "source": "/((?!api|uploads|assets|favicon.ico|robots.txt).*)",
       "destination": "/index.html"
     }
