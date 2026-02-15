@@ -13,7 +13,7 @@ export const config = {
   adminEmail: process.env.ADMIN_EMAIL || "admin@example.com",
   adminPassword: process.env.ADMIN_PASSWORD || "ChangeMe123!",
   resendApiKey: process.env.RESEND_API_KEY || "",
-  mailFrom: process.env.MAIL_FROM || "Portfolio Studio <no-reply@portfolio-studio.app>",
+  mailFrom: process.env.MAIL_FROM || "Portfolio Studio <adkhexx@gmail.com>",
   cookieSecure: process.env.COOKIE_SECURE ? process.env.COOKIE_SECURE === "true" : process.env.NODE_ENV === "production",
   cookieSameSite: (process.env.COOKIE_SAME_SITE || (process.env.NODE_ENV === "production" ? "none" : "lax")) as
     | "lax"
