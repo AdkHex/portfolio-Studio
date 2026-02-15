@@ -12,7 +12,19 @@
       "destination": "https://ltd-leland-adkhex-a2e557e5.koyeb.app/uploads/:path*"
     },
     {
-      "source": "/((?!api|uploads|assets|favicon.ico|robots.txt).*)",
+      "source": "/assets/:path*",
+      "destination": "/assets/:path*"
+    },
+    {
+      "source": "/favicon.ico",
+      "destination": "/favicon.ico"
+    },
+    {
+      "source": "/robots.txt",
+      "destination": "/robots.txt"
+    },
+    {
+      "source": "/:path*",
       "destination": "/index.html"
     }
   ]
