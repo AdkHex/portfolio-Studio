@@ -1,0 +1,372 @@
+@import url("https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500;600&display=swap");
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 30 32% 97%;
+    --foreground: 204 35% 12%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 204 35% 12%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 204 35% 12%;
+
+    --primary: 187 80% 34%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 35 32% 92%;
+    --secondary-foreground: 204 35% 14%;
+
+    --muted: 35 20% 90%;
+    --muted-foreground: 206 16% 35%;
+
+    --accent: 16 91% 58%;
+    --accent-foreground: 0 0% 100%;
+
+    --destructive: 0 72% 54%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 28 19% 81%;
+    --input: 28 19% 81%;
+    --ring: 187 80% 34%;
+
+    --radius: 0.9rem;
+  }
+
+  html:not(.light) {
+    --background: 208 38% 7%;
+    --foreground: 42 38% 92%;
+
+    --card: 208 30% 11%;
+    --card-foreground: 42 38% 92%;
+
+    --popover: 208 30% 11%;
+    --popover-foreground: 42 38% 92%;
+
+    --primary: 182 77% 46%;
+    --primary-foreground: 208 38% 7%;
+
+    --secondary: 210 28% 17%;
+    --secondary-foreground: 42 38% 92%;
+
+    --muted: 209 22% 20%;
+    --muted-foreground: 39 14% 68%;
+
+    --accent: 20 93% 58%;
+    --accent-foreground: 210 34% 10%;
+
+    --destructive: 0 70% 56%;
+    --destructive-foreground: 42 38% 92%;
+
+    --border: 211 20% 28%;
+    --input: 211 20% 28%;
+    --ring: 182 77% 46%;
+
+    --hero-glow-a: 182 77% 46%;
+    --hero-glow-b: 20 93% 58%;
+    --hero-glow-c: 208 38% 7%;
+  }
+
+  html:not(.light)[data-portfolio-theme="neon-grid"] {
+    --primary: 182 77% 46%;
+    --accent: 20 93% 58%;
+    --secondary: 210 28% 17%;
+    --card: 208 30% 11%;
+    --hero-glow-a: 182 77% 46%;
+    --hero-glow-b: 20 93% 58%;
+    --hero-glow-c: 208 38% 7%;
+  }
+
+  html:not(.light)[data-portfolio-theme="ocean-slate"] {
+    --primary: 199 86% 60%;
+    --accent: 213 72% 58%;
+    --secondary: 212 30% 16%;
+    --card: 212 26% 12%;
+    --muted-foreground: 210 15% 72%;
+    --hero-glow-a: 199 86% 60%;
+    --hero-glow-b: 213 72% 58%;
+    --hero-glow-c: 212 35% 8%;
+  }
+
+  html:not(.light)[data-portfolio-theme="amber-editor"] {
+    --primary: 35 88% 56%;
+    --accent: 19 92% 62%;
+    --secondary: 24 28% 16%;
+    --card: 24 25% 11%;
+    --muted-foreground: 30 17% 70%;
+    --hero-glow-a: 35 88% 56%;
+    --hero-glow-b: 19 92% 62%;
+    --hero-glow-c: 20 30% 8%;
+  }
+
+  html:not(.light)[data-portfolio-theme="forest-signal"] {
+    --primary: 155 67% 44%;
+    --accent: 142 55% 45%;
+    --secondary: 156 22% 15%;
+    --card: 160 22% 11%;
+    --muted-foreground: 145 14% 70%;
+    --hero-glow-a: 155 67% 44%;
+    --hero-glow-b: 142 55% 45%;
+    --hero-glow-c: 160 28% 7%;
+  }
+
+  html:not(.light)[data-portfolio-theme="mono-slate"] {
+    --primary: 210 10% 78%;
+    --accent: 210 8% 62%;
+    --secondary: 214 15% 16%;
+    --card: 214 14% 12%;
+    --muted-foreground: 210 11% 68%;
+    --ring: 210 10% 78%;
+    --hero-glow-a: 210 10% 78%;
+    --hero-glow-b: 210 8% 62%;
+    --hero-glow-c: 214 18% 8%;
+  }
+
+  html:not(.light)[data-portfolio-theme="midnight-luxe"] {
+    --primary: 186 70% 58%;
+    --accent: 340 78% 66%;
+    --secondary: 232 25% 16%;
+    --card: 231 24% 11%;
+    --muted-foreground: 225 14% 74%;
+    --hero-glow-a: 186 70% 58%;
+    --hero-glow-b: 340 78% 66%;
+    --hero-glow-c: 230 30% 8%;
+  }
+
+  html:not(.light)[data-portfolio-theme="sandstone-pro"] {
+    --primary: 31 79% 58%;
+    --accent: 18 72% 56%;
+    --secondary: 28 23% 18%;
+    --card: 27 20% 12%;
+    --muted-foreground: 28 14% 72%;
+    --hero-glow-a: 31 79% 58%;
+    --hero-glow-b: 18 72% 56%;
+    --hero-glow-c: 24 24% 8%;
+  }
+
+  html:not(.light)[data-portfolio-theme="cobalt-grid"] {
+    --primary: 219 88% 63%;
+    --accent: 196 82% 58%;
+    --secondary: 221 30% 16%;
+    --card: 222 27% 11%;
+    --muted-foreground: 217 15% 72%;
+    --hero-glow-a: 219 88% 63%;
+    --hero-glow-b: 196 82% 58%;
+    --hero-glow-c: 222 30% 8%;
+  }
+
+  html:not(.light)[data-portfolio-theme="graphite-sunset"] {
+    --primary: 20 88% 60%;
+    --accent: 46 88% 58%;
+    --secondary: 220 12% 17%;
+    --card: 220 11% 12%;
+    --muted-foreground: 210 10% 72%;
+    --hero-glow-a: 20 88% 60%;
+    --hero-glow-b: 46 88% 58%;
+    --hero-glow-c: 220 16% 8%;
+  }
+
+  html.light[data-portfolio-theme="neon-grid"] {
+    --primary: 187 80% 34%;
+    --accent: 16 91% 58%;
+    --secondary: 185 28% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 206 16% 35%;
+    --border: 187 24% 78%;
+    --input: 187 24% 78%;
+    --ring: 187 80% 34%;
+    --hero-glow-a: 187 80% 34%;
+    --hero-glow-b: 16 91% 58%;
+    --hero-glow-c: 30 32% 97%;
+  }
+
+  html.light[data-portfolio-theme="ocean-slate"] {
+    --primary: 203 78% 45%;
+    --accent: 214 82% 58%;
+    --secondary: 205 28% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 208 14% 40%;
+    --border: 205 22% 80%;
+    --input: 205 22% 80%;
+    --ring: 203 78% 45%;
+    --hero-glow-a: 203 78% 45%;
+    --hero-glow-b: 214 82% 58%;
+    --hero-glow-c: 204 40% 97%;
+  }
+
+  html.light[data-portfolio-theme="amber-editor"] {
+    --primary: 31 84% 44%;
+    --accent: 20 88% 54%;
+    --secondary: 34 35% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 30 18% 38%;
+    --border: 30 24% 80%;
+    --input: 30 24% 80%;
+    --ring: 31 84% 44%;
+    --hero-glow-a: 31 84% 44%;
+    --hero-glow-b: 20 88% 54%;
+    --hero-glow-c: 30 40% 97%;
+  }
+
+  html.light[data-portfolio-theme="forest-signal"] {
+    --primary: 153 65% 34%;
+    --accent: 142 58% 40%;
+    --secondary: 148 28% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 150 14% 38%;
+    --border: 150 20% 80%;
+    --input: 150 20% 80%;
+    --ring: 153 65% 34%;
+    --hero-glow-a: 153 65% 34%;
+    --hero-glow-b: 142 58% 40%;
+    --hero-glow-c: 146 40% 97%;
+  }
+
+  html.light[data-portfolio-theme="mono-slate"] {
+    --primary: 214 14% 34%;
+    --accent: 214 10% 46%;
+    --secondary: 214 20% 93%;
+    --card: 0 0% 100%;
+    --muted-foreground: 214 10% 40%;
+    --border: 214 16% 81%;
+    --input: 214 16% 81%;
+    --ring: 214 14% 34%;
+    --hero-glow-a: 214 14% 40%;
+    --hero-glow-b: 214 10% 56%;
+    --hero-glow-c: 215 30% 98%;
+  }
+
+  html.light[data-portfolio-theme="midnight-luxe"] {
+    --primary: 196 62% 42%;
+    --accent: 336 64% 55%;
+    --secondary: 225 26% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 228 12% 40%;
+    --border: 224 22% 80%;
+    --input: 224 22% 80%;
+    --ring: 196 62% 42%;
+    --hero-glow-a: 196 62% 42%;
+    --hero-glow-b: 336 64% 55%;
+    --hero-glow-c: 228 40% 97%;
+  }
+
+  html.light[data-portfolio-theme="sandstone-pro"] {
+    --primary: 31 79% 44%;
+    --accent: 18 72% 48%;
+    --secondary: 30 35% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 28 16% 40%;
+    --border: 30 22% 80%;
+    --input: 30 22% 80%;
+    --ring: 31 79% 44%;
+    --hero-glow-a: 31 79% 44%;
+    --hero-glow-b: 18 72% 48%;
+    --hero-glow-c: 30 40% 97%;
+  }
+
+  html.light[data-portfolio-theme="cobalt-grid"] {
+    --primary: 218 80% 48%;
+    --accent: 196 78% 50%;
+    --secondary: 215 30% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 214 14% 40%;
+    --border: 216 22% 80%;
+    --input: 216 22% 80%;
+    --ring: 218 80% 48%;
+    --hero-glow-a: 218 80% 48%;
+    --hero-glow-b: 196 78% 50%;
+    --hero-glow-c: 214 45% 97%;
+  }
+
+  html.light[data-portfolio-theme="graphite-sunset"] {
+    --primary: 18 82% 48%;
+    --accent: 43 86% 50%;
+    --secondary: 216 18% 92%;
+    --card: 0 0% 100%;
+    --muted-foreground: 212 10% 40%;
+    --border: 212 16% 81%;
+    --input: 212 16% 81%;
+    --ring: 18 82% 48%;
+    --hero-glow-a: 18 82% 48%;
+    --hero-glow-b: 43 86% 50%;
+    --hero-glow-c: 212 32% 97%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: "IBM Plex Sans", sans-serif;
+    text-rendering: geometricPrecision;
+  }
+}
+
+@layer utilities {
+  .section-shell {
+    position: relative;
+  }
+
+  .section-kicker {
+    @apply font-mono text-xs font-semibold uppercase tracking-[0.2em] text-primary;
+  }
+
+  .section-title {
+    @apply mt-3 text-3xl font-extrabold leading-tight tracking-tight sm:text-4xl;
+  }
+
+  .reveal-out {
+    opacity: 0;
+    transform: translateY(28px);
+  }
+
+  .reveal-in {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  .hero-background {
+    background:
+      radial-gradient(circle at 80% 10%, hsl(var(--hero-glow-a) / 0.24), transparent 42%),
+      radial-gradient(circle at 10% 80%, hsl(var(--hero-glow-b) / 0.2), transparent 36%),
+      linear-gradient(180deg, hsl(var(--hero-glow-c)), hsl(var(--background)));
+  }
+
+  .hero-panel {
+    background:
+      linear-gradient(140deg, hsl(var(--card) / 0.85), hsl(var(--secondary) / 0.65));
+    box-shadow:
+      0 16px 48px hsl(var(--background) / 0.45),
+      inset 0 1px 0 hsl(var(--foreground) / 0.05);
+  }
+
+  .soft-card {
+    background: hsl(var(--card) / 0.68);
+    box-shadow:
+      0 12px 30px hsl(var(--background) / 0.22),
+      inset 0 1px 0 hsl(var(--foreground) / 0.03);
+  }
+
+  .hero-noise {
+    opacity: 0.13;
+    background-image: radial-gradient(hsl(var(--foreground)) 0.4px, transparent 0.4px);
+    background-size: 10px 10px;
+  }
+
+  .text-balance {
+    text-wrap: balance;
+  }
+
+  .text-pretty {
+    text-wrap: pretty;
+  }
+}
