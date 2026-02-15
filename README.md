@@ -72,6 +72,8 @@ KHALTI_SECRET_KEY=<optional>
 KHALTI_FALLBACK_PHONE=9800000001
 PLUS_AMOUNT_NPR=5000
 PRO_AMOUNT_NPR=1500
+RESEND_API_KEY=<optional-for-email-verification>
+MAIL_FROM=Portfolio Studio <no-reply@yourdomain.com>
 ```
 
 Start command:

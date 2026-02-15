@@ -1,6 +1,6 @@
 import { FormEvent, useState } from "react";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { api } from "@/lib/api";
+import { ApiError, api } from "@/lib/api";
 
 interface Props {
   mode: "login" | "signup";
@@ -13,15 +13,23 @@ export default function StudioAuthPage({ mode }: Props) {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [notice, setNotice] = useState("");
   const [loading, setLoading] = useState(false);
+  const [showResend, setShowResend] = useState(false);
 
   const submit = async (event: FormEvent) => {
     event.preventDefault();
     setError("");
+    setNotice("");
+    setShowResend(false);
     setLoading(true);
     try {
       if (mode === "signup") {
-        await api.accountSignup({ name: name.trim(), email: email.trim(), password });
+        const signup = await api.accountSignup({ name: name.trim(), email: email.trim(), password });
+        if (signup.requiresEmailVerification) {
+          setNotice("Verification email sent. Please check your inbox before signing in.");
+          return;
+        }
         const plan = searchParams.get("plan");
         if (plan === "plus" || plan === "pro") {
           const checkout = await api.accountCreateCheckout(plan);
@@ -36,7 +44,29 @@ export default function StudioAuthPage({ mode }: Props) {
       }
       navigate("/studio", { replace: true });
     } catch (submitError) {
+      if (submitError instanceof ApiError && submitError.status === 403) {
+        setShowResend(true);
+      }
       setError(submitError instanceof Error ? submitError.message : "Request failed.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const resendVerification = async () => {
+    if (!email.trim()) {
+      setError("Enter your email first.");
+      return;
+    }
+    setLoading(true);
+    setError("");
+    setNotice("");
+    try {
+      await api.accountResendVerification({ email: email.trim() });
+      setNotice("Verification email sent again. Check inbox/spam.");
+      setShowResend(false);
+    } catch (resendError) {
+      setError(resendError instanceof Error ? resendError.message : "Could not resend email.");
     } finally {
       setLoading(false);
     }
@@ -78,7 +108,18 @@ export default function StudioAuthPage({ mode }: Props) {
           <button type="submit" disabled={loading} className="mt-2 h-11 rounded-xl bg-primary text-sm font-semibold text-primary-foreground transition hover:opacity-95 disabled:opacity-65">
             {loading ? "Please wait..." : mode === "signup" ? "Create account" : "Sign in"}
           </button>
+          {showResend ? (
+            <button
+              type="button"
+              onClick={resendVerification}
+              disabled={loading}
+              className="h-10 rounded-xl border border-border/70 bg-card/50 text-sm font-semibold text-foreground transition hover:border-primary/60 disabled:opacity-65"
+            >
+              Resend Verification Email
+            </button>
+          ) : null}
           {error ? <p className="text-sm text-destructive">{error}</p> : null}
+          {notice ? <p className="text-sm text-emerald-400">{notice}</p> : null}
         </div>
 
         <p className="mt-5 text-sm text-muted-foreground">

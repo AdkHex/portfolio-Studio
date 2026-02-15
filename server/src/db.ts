@@ -30,6 +30,10 @@ CREATE TABLE IF NOT EXISTS users (
   email TEXT UNIQUE NOT NULL,
   password_hash TEXT NOT NULL,
   name TEXT NOT NULL,
+  email_verified INTEGER NOT NULL DEFAULT 0,
+  email_verified_at TEXT,
+  email_verification_token_hash TEXT,
+  email_verification_expires_at TEXT,
   created_at TEXT NOT NULL,
   updated_at TEXT NOT NULL
 );
@@ -149,6 +153,19 @@ if (!messageColumns.some((column) => column.name === "site_id")) {
 const userColumns = db.prepare("PRAGMA table_info(users)").all() as Array<{ name: string }>;
 if (!userColumns.some((column) => column.name === "plan")) {
   db.exec("ALTER TABLE users ADD COLUMN plan TEXT NOT NULL DEFAULT 'free'");
+}
+if (!userColumns.some((column) => column.name === "email_verified")) {
+  db.exec("ALTER TABLE users ADD COLUMN email_verified INTEGER NOT NULL DEFAULT 0");
+  db.exec("UPDATE users SET email_verified = 1, email_verified_at = COALESCE(email_verified_at, datetime('now'))");
+}
+if (!userColumns.some((column) => column.name === "email_verified_at")) {
+  db.exec("ALTER TABLE users ADD COLUMN email_verified_at TEXT");
+}
+if (!userColumns.some((column) => column.name === "email_verification_token_hash")) {
+  db.exec("ALTER TABLE users ADD COLUMN email_verification_token_hash TEXT");
+}
+if (!userColumns.some((column) => column.name === "email_verification_expires_at")) {
+  db.exec("ALTER TABLE users ADD COLUMN email_verification_expires_at TEXT");
 }
 
 const parseJson = <T>(value: string) => JSON.parse(value) as T;
@@ -377,6 +394,10 @@ interface UserRow {
   email: string;
   passwordHash: string;
   name: string;
+  emailVerified: number;
+  emailVerifiedAt: string | null;
+  emailVerificationTokenHash: string | null;
+  emailVerificationExpiresAt: string | null;
   plan: "free" | "plus" | "pro";
   createdAt: string;
   updatedAt: string;
@@ -490,7 +511,13 @@ export function getAdminByEmail(email: string) {
 export function getUserByEmail(email: string) {
   return db
     .prepare(
-      "SELECT id, email, password_hash as passwordHash, name, COALESCE(plan, 'free') as plan, created_at as createdAt, updated_at as updatedAt FROM users WHERE email = ?"
+      `SELECT id, email, password_hash as passwordHash, name,
+              COALESCE(email_verified, 0) as emailVerified,
+              email_verified_at as emailVerifiedAt,
+              email_verification_token_hash as emailVerificationTokenHash,
+              email_verification_expires_at as emailVerificationExpiresAt,
+              COALESCE(plan, 'free') as plan, created_at as createdAt, updated_at as updatedAt
+       FROM users WHERE email = ?`
     )
     .get(email) as UserRow | undefined;
 }
@@ -498,7 +525,13 @@ export function getUserByEmail(email: string) {
 export function getUserById(id: string) {
   return db
     .prepare(
-      "SELECT id, email, password_hash as passwordHash, name, COALESCE(plan, 'free') as plan, created_at as createdAt, updated_at as updatedAt FROM users WHERE id = ?"
+      `SELECT id, email, password_hash as passwordHash, name,
+              COALESCE(email_verified, 0) as emailVerified,
+              email_verified_at as emailVerifiedAt,
+              email_verification_token_hash as emailVerificationTokenHash,
+              email_verification_expires_at as emailVerificationExpiresAt,
+              COALESCE(plan, 'free') as plan, created_at as createdAt, updated_at as updatedAt
+       FROM users WHERE id = ?`
     )
     .get(id) as UserRow | undefined;
 }
@@ -507,9 +540,47 @@ export function createUserAccount(payload: { email: string; passwordHash: string
   const timestamp = now();
   const id = randomUUID();
   db.prepare(
-    "INSERT INTO users (id, email, password_hash, name, plan, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?)"
-  ).run(id, payload.email, payload.passwordHash, payload.name, "free", timestamp, timestamp);
+    "INSERT INTO users (id, email, password_hash, name, email_verified, plan, created_at, updated_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+  ).run(id, payload.email, payload.passwordHash, payload.name, 0, "free", timestamp, timestamp);
   return getUserById(id)!;
+}
+
+export function saveEmailVerificationToken(payload: { userId: string; tokenHash: string; expiresAt: string }) {
+  const timestamp = now();
+  db.prepare(
+    "UPDATE users SET email_verification_token_hash = ?, email_verification_expires_at = ?, updated_at = ? WHERE id = ?"
+  ).run(payload.tokenHash, payload.expiresAt, timestamp, payload.userId);
+}
+
+export function verifyUserEmailByTokenHash(tokenHash: string) {
+  const timestamp = now();
+  const user = db
+    .prepare(
+      `SELECT id, email, password_hash as passwordHash, name,
+              COALESCE(email_verified, 0) as emailVerified,
+              email_verified_at as emailVerifiedAt,
+              email_verification_token_hash as emailVerificationTokenHash,
+              email_verification_expires_at as emailVerificationExpiresAt,
+              COALESCE(plan, 'free') as plan, created_at as createdAt, updated_at as updatedAt
+       FROM users
+       WHERE email_verification_token_hash = ?
+       LIMIT 1`
+    )
+    .get(tokenHash) as UserRow | undefined;
+
+  if (!user || !user.emailVerificationExpiresAt) {
+    return null;
+  }
+
+  if (new Date(user.emailVerificationExpiresAt).getTime() < Date.now()) {
+    return null;
+  }
+
+  db.prepare(
+    "UPDATE users SET email_verified = 1, email_verified_at = ?, email_verification_token_hash = NULL, email_verification_expires_at = NULL, updated_at = ? WHERE id = ?"
+  ).run(timestamp, timestamp, user.id);
+
+  return getUserById(user.id) || null;
 }
 
 export function createSiteForUser(payload: { userId: string; name: string }) {

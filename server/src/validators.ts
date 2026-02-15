@@ -11,6 +11,10 @@ export const signupSchema = z.object({
   password: z.string().min(8)
 });
 
+export const resendVerificationSchema = z.object({
+  email: z.string().email()
+});
+
 export const siteCreateSchema = z.object({
   name: z.string().min(2).max(120)
 });

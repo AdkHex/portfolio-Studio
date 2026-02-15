@@ -6,6 +6,7 @@ import StudioAuthPage from "./account/StudioAuthPage";
 import StudioPage from "./account/StudioPage";
 import StudioEditorPage from "./account/StudioEditorPage";
 import StudioBillingCallbackPage from "./account/StudioBillingCallbackPage";
+import StudioVerifyEmailPage from "./account/StudioVerifyEmailPage";
 import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import RefundPage from "./pages/legal/RefundPage";
@@ -23,6 +24,7 @@ export default function App() {
         <Route path="/s/:slug" element={<Index />} />
         <Route path="/studio/login" element={<StudioAuthPage mode="login" />} />
         <Route path="/studio/signup" element={<StudioAuthPage mode="signup" />} />
+        <Route path="/studio/verify-email" element={<StudioVerifyEmailPage />} />
         <Route path="/studio/billing/callback" element={<StudioBillingCallbackPage />} />
         <Route path="/studio" element={<StudioPage />} />
         <Route path="/studio/editor/:siteId" element={<StudioEditorPage />} />
