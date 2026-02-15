@@ -1,5 +1,6 @@
 import { FormEvent, useState } from "react";
 import { ArrowUpRight, Check, Copy, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
 import { useScrollReveal } from "@/hooks/use-scroll-reveal";
 import { api } from "@/lib/api";
 import type { SiteSettings } from "@/types/cms";
@@ -156,7 +157,14 @@ const ContactSection = ({ settings, siteSlug }: Props) => {
 
       <div className="mx-auto mt-10 flex w-full max-w-6xl flex-col gap-2 border-t border-border/80 pt-6 text-xs text-muted-foreground sm:flex-row sm:items-center sm:justify-between">
         <p>© {new Date().getFullYear()} {settings.siteName}. All rights reserved.</p>
-        <p>{settings.footerText}</p>
+        <div className="flex flex-wrap items-center gap-3">
+          <p>{settings.footerText}</p>
+          <span className="hidden text-border sm:inline">|</span>
+          <Link to="/legal/terms" className="hover:text-foreground">Terms</Link>
+          <Link to="/legal/privacy" className="hover:text-foreground">Privacy</Link>
+          <Link to="/legal/refund" className="hover:text-foreground">Refunds</Link>
+          <Link to="/legal/acceptable-use" className="hover:text-foreground">Acceptable Use</Link>
+        </div>
       </div>
     </footer>
   );
