@@ -16,14 +16,15 @@ import {
   Settings,
   Shield,
   Trash2,
+  UserRound,
   Upload
 } from "lucide-react";
 import { api } from "@/lib/api";
 import { bumpContentVersion } from "@/lib/content-sync";
 import { PORTFOLIO_THEMES } from "@/lib/portfolio-themes";
-import type { ContactMessage, DashboardStats, Project, SiteSettings } from "@/types/cms";
+import type { AdminUserAccount, ContactMessage, DashboardStats, Project, SiteSettings } from "@/types/cms";
 
-type Tab = "dashboard" | "settings" | "themes" | "projects" | "messages";
+type Tab = "dashboard" | "settings" | "themes" | "projects" | "messages" | "users";
 type ToastType = "success" | "error";
 
 interface ToastItem {
@@ -43,7 +44,8 @@ const tabs: Array<{ id: Tab; label: string; icon: ComponentType<{ size?: number 
   { id: "settings", label: "Content", icon: Settings },
   { id: "themes", label: "Themes / UI", icon: Palette },
   { id: "projects", label: "Projects", icon: FolderKanban },
-  { id: "messages", label: "Messages", icon: Inbox }
+  { id: "messages", label: "Messages", icon: Inbox },
+  { id: "users", label: "Users", icon: UserRound }
 ];
 
 const blankProject = (): Omit<Project, "id" | "createdAt" | "updatedAt"> => ({
@@ -79,11 +81,14 @@ export default function AdminPanel() {
   const [settings, setSettings] = useState<SiteSettings | null>(null);
   const [projects, setProjects] = useState<Project[]>([]);
   const [messages, setMessages] = useState<ContactMessage[]>([]);
+  const [users, setUsers] = useState<AdminUserAccount[]>([]);
 
   const [messageSearch, setMessageSearch] = useState("");
   const [messageStatus, setMessageStatus] = useState("all");
   const [selectedMessageId, setSelectedMessageId] = useState("");
   const [messagesRefreshing, setMessagesRefreshing] = useState(false);
+  const [usersRefreshing, setUsersRefreshing] = useState(false);
+  const [userSearch, setUserSearch] = useState("");
 
   const [editingProjectId, setEditingProjectId] = useState<string | "new" | "">("");
   const [projectDraft, setProjectDraft] = useState<Omit<Project, "id" | "createdAt" | "updatedAt">>(blankProject());
@@ -127,6 +132,7 @@ export default function AdminPanel() {
       setSettings(settingsData);
       setProjects(projectsData);
       setMessages(messagesData);
+      setUsers(await api.getUsers());
       if (messagesData[0]) {
         setSelectedMessageId((current) => current || messagesData[0].id);
       }
@@ -404,6 +410,37 @@ export default function AdminPanel() {
       pushToast("Could not refresh messages.", "error");
     } finally {
       setMessagesRefreshing(false);
+    }
+  };
+
+  const refreshUsers = async () => {
+    setUsersRefreshing(true);
+    clearAlerts();
+    try {
+      setUsers(await api.getUsers(userSearch));
+      pushToast("Users refreshed.", "success");
+    } catch (userError) {
+      setError(userError instanceof Error ? userError.message : "Failed to refresh users.");
+      pushToast("Could not refresh users.", "error");
+    } finally {
+      setUsersRefreshing(false);
+    }
+  };
+
+  const removeUser = async (id: string, emailAddress: string) => {
+    if (!window.confirm(`Delete user ${emailAddress} and all owned sites/content?\nThis action cannot be undone.`)) {
+      return;
+    }
+
+    clearAlerts();
+    try {
+      await api.deleteUser(id);
+      setUsers((current) => current.filter((user) => user.id !== id));
+      setDashboard(await api.getDashboard());
+      pushToast("User deleted.", "success");
+    } catch (userError) {
+      setError(userError instanceof Error ? userError.message : "Failed to delete user.");
+      pushToast("Could not delete user.", "error");
     }
   };
 
@@ -1019,6 +1056,62 @@ export default function AdminPanel() {
                         <p className="text-sm text-muted-foreground">Select a message to view details.</p>
                       )}
                     </div>
+                  </div>
+                </SectionCard>
+              </section>
+            )}
+
+            {tab === "users" && (
+              <section className="space-y-4">
+                <SectionCard
+                  title="Users"
+                  description="Manage Studio accounts. Deleting a user removes all their sites and related content."
+                  action={
+                    <button
+                      onClick={refreshUsers}
+                      disabled={usersRefreshing}
+                      className="inline-flex h-9 items-center gap-2 rounded-lg border border-border/70 px-3 text-xs font-semibold uppercase tracking-wider text-muted-foreground transition hover:text-foreground disabled:opacity-60"
+                    >
+                      <RefreshCw size={13} className={usersRefreshing ? "animate-spin" : ""} /> Refresh
+                    </button>
+                  }
+                >
+                  <div className="grid gap-3 md:grid-cols-[1fr_160px]">
+                    <input
+                      value={userSearch}
+                      onChange={(event) => setUserSearch(event.target.value)}
+                      placeholder="Search by name or email..."
+                      className={inputBase}
+                    />
+                    <button
+                      onClick={refreshUsers}
+                      className="rounded-xl bg-primary px-4 text-sm font-semibold text-primary-foreground transition hover:opacity-95"
+                    >
+                      Search
+                    </button>
+                  </div>
+
+                  <div className="mt-4 space-y-2 rounded-xl bg-background/45 p-3">
+                    {users.map((user) => (
+                      <article key={user.id} className="rounded-xl border border-border/70 bg-background/35 px-3 py-3">
+                        <div className="flex flex-wrap items-start justify-between gap-3">
+                          <div>
+                            <p className="font-semibold">{user.name}</p>
+                            <p className="text-xs text-muted-foreground">{user.email}</p>
+                            <p className="mt-1 text-[11px] uppercase tracking-wider text-muted-foreground">
+                              Plan: {user.plan} · Sites: {user.siteCount} · {user.emailVerified ? "Verified" : "Unverified"}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => removeUser(user.id, user.email)}
+                            className="inline-flex items-center gap-1 rounded-lg border border-destructive/45 px-3 py-1.5 text-xs text-destructive"
+                          >
+                            <Trash2 size={12} /> Delete User
+                          </button>
+                        </div>
+                      </article>
+                    ))}
+                    {!users.length ? <p className="p-2 text-sm text-muted-foreground">No users found.</p> : null}
                   </div>
                 </SectionCard>
               </section>

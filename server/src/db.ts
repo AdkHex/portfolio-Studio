@@ -403,6 +403,17 @@ interface UserRow {
   updatedAt: string;
 }
 
+interface UserListRow {
+  id: string;
+  email: string;
+  name: string;
+  email_verified: number;
+  plan: "free" | "plus" | "pro";
+  site_count: number;
+  created_at: string;
+  updated_at: string;
+}
+
 interface SiteRow {
   id: string;
   owner_user_id: string;
@@ -639,6 +650,64 @@ export function listSitesForUser(userId: string) {
     createdAt: row.created_at,
     updatedAt: row.updated_at
   }));
+}
+
+export function listUserAccounts(search = "") {
+  const query = `
+    SELECT
+      u.id,
+      u.email,
+      u.name,
+      COALESCE(u.email_verified, 0) as email_verified,
+      COALESCE(u.plan, 'free') as plan,
+      COUNT(s.id) as site_count,
+      u.created_at,
+      u.updated_at
+    FROM users u
+    LEFT JOIN sites s ON s.owner_user_id = u.id
+    ${search ? "WHERE (u.email LIKE ? OR u.name LIKE ?)" : ""}
+    GROUP BY u.id
+    ORDER BY u.created_at DESC
+  `;
+  const rows = search
+    ? (db.prepare(query).all(`%${search}%`, `%${search}%`) as UserListRow[])
+    : (db.prepare(query).all() as UserListRow[]);
+
+  return rows.map((row) => ({
+    id: row.id,
+    email: row.email,
+    name: row.name,
+    emailVerified: Boolean(row.email_verified),
+    plan: row.plan,
+    siteCount: row.site_count,
+    createdAt: row.created_at,
+    updatedAt: row.updated_at
+  }));
+}
+
+export function deleteUserAccountById(userId: string) {
+  const user = db.prepare("SELECT id FROM users WHERE id = ?").get(userId) as { id: string } | undefined;
+  if (!user) {
+    return false;
+  }
+
+  const transaction = db.transaction(() => {
+    const siteRows = db.prepare("SELECT id FROM sites WHERE owner_user_id = ?").all(userId) as Array<{ id: string }>;
+    siteRows.forEach((site) => {
+      db.prepare("DELETE FROM tenant_projects WHERE site_id = ?").run(site.id);
+      db.prepare("DELETE FROM tenant_site_settings WHERE site_id = ?").run(site.id);
+      db.prepare("DELETE FROM messages WHERE site_id = ?").run(site.id);
+      db.prepare("DELETE FROM site_memberships WHERE site_id = ?").run(site.id);
+      db.prepare("DELETE FROM sites WHERE id = ?").run(site.id);
+    });
+
+    db.prepare("DELETE FROM site_memberships WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM billing_orders WHERE user_id = ?").run(userId);
+    db.prepare("DELETE FROM users WHERE id = ?").run(userId);
+  });
+
+  transaction();
+  return true;
 }
 
 function resolveSiteLimit(plan: "free" | "plus" | "pro") {

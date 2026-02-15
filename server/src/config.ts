@@ -9,7 +9,7 @@ export const config = {
   jwtExpiresIn: process.env.JWT_EXPIRES_IN || "7d",
   corsOrigin: process.env.CORS_ORIGIN || "http://localhost:8080",
   appBaseUrl: process.env.APP_BASE_URL || process.env.CORS_ORIGIN || "http://localhost:8080",
-  adminPath: process.env.VITE_ADMIN_PATH || "/portal-x9a7m",
+  adminPath: process.env.VITE_ADMIN_PATH || "/admin",
   adminEmail: process.env.ADMIN_EMAIL || "admin@example.com",
   adminPassword: process.env.ADMIN_PASSWORD || "ChangeMe123!",
   resendApiKey: process.env.RESEND_API_KEY || "",

@@ -66,7 +66,7 @@ JWT_SECRET=<very-long-random-secret>
 JWT_EXPIRES_IN=7d
 ADMIN_EMAIL=<your-admin-email>
 ADMIN_PASSWORD=<your-admin-password>
-VITE_ADMIN_PATH=/portal-x9a7m
+VITE_ADMIN_PATH=/admin
 KHALTI_BASE_URL=https://dev.khalti.com
 KHALTI_SECRET_KEY=<optional>
 KHALTI_FALLBACK_PHONE=9800000001
@@ -93,7 +93,7 @@ Frontend env vars:
 
 ```env
 VITE_API_BASE_URL=https://<your-backend-domain>
-VITE_ADMIN_PATH=/portal-x9a7m
+VITE_ADMIN_PATH=/admin
 ```
 
 Then deploy.
@@ -117,3 +117,6 @@ Then deploy.
 - For custom domains, update both:
   - backend `CORS_ORIGIN`, `APP_BASE_URL`
   - frontend `VITE_API_BASE_URL`
+- Email verification notes:
+  - `MAIL_FROM` must be a verified sender/domain in Resend.
+  - Personal Gmail addresses in `MAIL_FROM` are not supported for this flow.

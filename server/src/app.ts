@@ -1,6 +1,5 @@
 import path from "node:path";
 import fs from "node:fs";
-import { createHash, randomBytes } from "node:crypto";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser";
@@ -9,7 +8,6 @@ import rateLimit from "express-rate-limit";
 import multer from "multer";
 import { clearAuthCookie, clearUserAuthCookie, comparePassword, hashPassword, setAuthCookie, setUserAuthCookie, signToken } from "./auth.js";
 import { config } from "./config.js";
-import { sendVerificationEmail } from "./mailer.js";
 import { noIndexAdmin, requireAdmin, requireUser } from "./middleware.js";
 import type { AuthRequest } from "./types.js";
 import {
@@ -19,7 +17,6 @@ import {
   messageStatusSchema,
   projectSchema,
   reorderSchema,
-  resendVerificationSchema,
   settingsSchema,
   signupSchema,
   siteCreateSchema,
@@ -34,6 +31,7 @@ import {
   createSiteProject,
   createProject,
   dashboardStats,
+  deleteUserAccountById,
   deleteSiteForUser,
   deleteMessage,
   deleteSiteMessage,
@@ -44,13 +42,13 @@ import {
   getBillingOrderByProviderRef,
   getSiteSettings,
   getUserByEmail,
-  saveEmailVerificationToken,
   getSettings,
   listSitesForUser,
   listMessages,
   listBillingOrdersForUser,
   listSiteMessages,
   listSiteProjects,
+  listUserAccounts,
   listProjects,
   getUserBillingSummary,
   reorderSiteProjects,
@@ -64,8 +62,7 @@ import {
   updateSiteProject,
   updateMessageStatus,
   updateSiteMessageStatus,
-  updateProject,
-  verifyUserEmailByTokenHash
+  updateProject
 } from "./db.js";
 
 const uploadDir = path.resolve(process.cwd(), "uploads");
@@ -121,22 +118,6 @@ function priceForPlan(plan: "plus" | "pro") {
   return plan === "plus" ? config.plusAmountNpr : config.proAmountNpr;
 }
 
-function hashVerificationToken(token: string) {
-  return createHash("sha256").update(token).digest("hex");
-}
-
-function buildVerificationUrl(token: string) {
-  return `${config.appBaseUrl}/studio/verify-email?token=${encodeURIComponent(token)}`;
-}
-
-async function issueVerificationEmail(user: { id: string; email: string; name: string }) {
-  const token = randomBytes(32).toString("hex");
-  const tokenHash = hashVerificationToken(token);
-  const expiresAt = new Date(Date.now() + 30 * 60 * 1000).toISOString();
-  saveEmailVerificationToken({ userId: user.id, tokenHash, expiresAt });
-  await sendVerificationEmail({ to: user.email, userName: user.name, verifyUrl: buildVerificationUrl(token) });
-}
-
 app.get("/api/health", (_req, res) => {
   res.json({ ok: true });
 });
@@ -182,11 +163,11 @@ app.post("/api/account/auth/signup", loginLimiter, async (req, res) => {
     name: parsed.data.name.trim()
   });
   const site = createSiteForUser({ userId: user.id, name: "My Portfolio" });
-  await issueVerificationEmail({ id: user.id, email: user.email, name: user.name });
+  const token = signToken({ userId: user.id, email: user.email, role: "user", scope: "user" });
+  setUserAuthCookie(res, token);
   return res.status(201).json({
     user: { id: user.id, name: user.name, email: user.email },
-    site: { id: site.id, name: site.name, slug: site.slug, status: site.status },
-    requiresEmailVerification: true
+    site: { id: site.id, name: site.name, slug: site.slug, status: site.status }
   });
 });
 
@@ -206,47 +187,8 @@ app.post("/api/account/auth/login", loginLimiter, async (req, res) => {
     return res.status(401).json({ error: "Invalid credentials" });
   }
 
-  if (!user.emailVerified) {
-    await issueVerificationEmail({ id: user.id, email: user.email, name: user.name });
-    return res.status(403).json({ error: "Please verify your email before signing in.", code: "EMAIL_NOT_VERIFIED" });
-  }
-
   const token = signToken({ userId: user.id, email: user.email, role: "user", scope: "user" });
   setUserAuthCookie(res, token);
-  return res.json({ success: true });
-});
-
-app.post("/api/account/auth/resend-verification", loginLimiter, async (req, res) => {
-  const parsed = resendVerificationSchema.safeParse(req.body);
-  if (!parsed.success) {
-    return res.status(400).json({ error: "Invalid payload", details: parsed.error.flatten() });
-  }
-
-  const user = getUserByEmail(parsed.data.email.toLowerCase());
-  if (!user) {
-    return res.json({ success: true });
-  }
-  if (user.emailVerified) {
-    return res.json({ success: true });
-  }
-
-  await issueVerificationEmail({ id: user.id, email: user.email, name: user.name });
-  return res.json({ success: true });
-});
-
-app.get("/api/account/auth/verify-email", async (req, res) => {
-  const token = typeof req.query.token === "string" ? req.query.token.trim() : "";
-  if (!token) {
-    return res.status(400).json({ error: "Missing verification token." });
-  }
-
-  const user = verifyUserEmailByTokenHash(hashVerificationToken(token));
-  if (!user) {
-    return res.status(400).json({ error: "Verification link is invalid or expired." });
-  }
-
-  const authToken = signToken({ userId: user.id, email: user.email, role: "user", scope: "user" });
-  setUserAuthCookie(res, authToken);
   return res.json({ success: true });
 });
 
@@ -793,6 +735,19 @@ app.get("/api/admin/messages", (req, res) => {
   const search = typeof req.query.search === "string" ? req.query.search : "";
   const status = typeof req.query.status === "string" ? req.query.status : "all";
   res.json(listMessages(search, status));
+});
+
+app.get("/api/admin/users", (req, res) => {
+  const search = typeof req.query.search === "string" ? req.query.search : "";
+  res.json(listUserAccounts(search));
+});
+
+app.delete("/api/admin/users/:id", (req, res) => {
+  const removed = deleteUserAccountById(req.params.id);
+  if (!removed) {
+    return res.status(404).json({ error: "User not found" });
+  }
+  return res.json({ success: true });
 });
 
 app.patch("/api/admin/messages/:id/status", (req, res) => {

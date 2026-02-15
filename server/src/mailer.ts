@@ -29,7 +29,15 @@ function verificationEmailHtml(verifyUrl: string, userName: string) {
 }
 
 export async function sendVerificationEmail(payload: { to: string; userName: string; verifyUrl: string }) {
+  const lowerFrom = config.mailFrom.toLowerCase();
+  if (lowerFrom.includes("@gmail.com")) {
+    throw new Error("MAIL_FROM cannot be a personal Gmail address. Use a verified sender/domain in Resend.");
+  }
+
   if (!config.resendApiKey) {
+    if (config.nodeEnv === "production") {
+      throw new Error("Email service is not configured (missing RESEND_API_KEY).");
+    }
     console.log(`[verification-email] missing RESEND_API_KEY, link for ${payload.to}: ${payload.verifyUrl}`);
     return { queued: false as const, fallback: true as const };
   }
@@ -55,4 +63,3 @@ export async function sendVerificationEmail(payload: { to: string; userName: str
 
   return { queued: true as const, fallback: false as const };
 }
-

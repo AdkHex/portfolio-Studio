@@ -184,3 +184,14 @@ export interface AccountBillingOrder {
   createdAt: string;
   updatedAt: string;
 }
+
+export interface AdminUserAccount {
+  id: string;
+  email: string;
+  name: string;
+  emailVerified: boolean;
+  plan: "free" | "plus" | "pro";
+  siteCount: number;
+  createdAt: string;
+  updatedAt: string;
+}

@@ -2,6 +2,7 @@ import type {
   AccountBillingOrder,
   AccountBillingSummary,
   AccountMeResponse,
+  AdminUserAccount,
   AccountSite,
   ContactMessage,
   DashboardStats,
@@ -91,16 +92,18 @@ export const api = {
     }),
 
   accountSignup: (payload: { name: string; email: string; password: string }) =>
-    request<{ user: { id: string; name: string; email: string }; site: { id: string; name: string; slug: string; status: string }; requiresEmailVerification?: boolean }>(
+    request<{
+      user: { id: string; name: string; email: string };
+      site: { id: string; name: string; slug: string; status: string };
+      requiresEmailVerification?: boolean;
+      verificationEmailSent?: boolean;
+      verificationWarning?: string | null;
+    }>(
       "/api/account/auth/signup",
       { method: "POST", body: JSON.stringify(payload) }
     ),
   accountLogin: (payload: { email: string; password: string }) =>
     request<{ success: boolean }>("/api/account/auth/login", { method: "POST", body: JSON.stringify(payload) }),
-  accountResendVerification: (payload: { email: string }) =>
-    request<{ success: boolean }>("/api/account/auth/resend-verification", { method: "POST", body: JSON.stringify(payload) }),
-  accountVerifyEmail: (token: string) =>
-    request<{ success: boolean }>(`/api/account/auth/verify-email?token=${encodeURIComponent(token)}`),
   accountLogout: () => request<{ success: boolean }>("/api/account/auth/logout", { method: "POST" }),
   accountMe: () => request<AccountMeResponse>("/api/account/auth/me"),
   accountSites: () => request<AccountSite[]>("/api/account/sites"),
@@ -188,6 +191,8 @@ export const api = {
 
   getMessages: (search = "", status = "all") =>
     request<ContactMessage[]>(`/api/admin/messages?search=${encodeURIComponent(search)}&status=${encodeURIComponent(status)}`),
+  getUsers: (search = "") => request<AdminUserAccount[]>(`/api/admin/users?search=${encodeURIComponent(search)}`),
+  deleteUser: (id: string) => request<{ success: boolean }>(`/api/admin/users/${id}`, { method: "DELETE" }),
   setMessageStatus: (id: string, status: "unread" | "read" | "archived") =>
     request<ContactMessage>(`/api/admin/messages/${id}/status`, { method: "PATCH", body: JSON.stringify({ status }) }),
   deleteMessage: (id: string) => request<{ success: boolean }>(`/api/admin/messages/${id}`, { method: "DELETE" }),

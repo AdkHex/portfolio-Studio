@@ -6,14 +6,13 @@ import StudioAuthPage from "./account/StudioAuthPage";
 import StudioPage from "./account/StudioPage";
 import StudioEditorPage from "./account/StudioEditorPage";
 import StudioBillingCallbackPage from "./account/StudioBillingCallbackPage";
-import StudioVerifyEmailPage from "./account/StudioVerifyEmailPage";
 import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import RefundPage from "./pages/legal/RefundPage";
 import AcceptableUsePage from "./pages/legal/AcceptableUsePage";
 import TermsAndConditionPage from "./pages/legal/TermsAndConditionPage";
 
-const adminPath = (import.meta.env.VITE_ADMIN_PATH || "/portal-x9a7m").replace(/^\/+/, "");
+const adminPath = (import.meta.env.VITE_ADMIN_PATH || "/admin").replace(/^\/+/, "");
 
 export default function App() {
   return (
@@ -24,7 +23,6 @@ export default function App() {
         <Route path="/s/:slug" element={<Index />} />
         <Route path="/studio/login" element={<StudioAuthPage mode="login" />} />
         <Route path="/studio/signup" element={<StudioAuthPage mode="signup" />} />
-        <Route path="/studio/verify-email" element={<StudioVerifyEmailPage />} />
         <Route path="/studio/billing/callback" element={<StudioBillingCallbackPage />} />
         <Route path="/studio" element={<StudioPage />} />
         <Route path="/studio/editor/:siteId" element={<StudioEditorPage />} />
@@ -33,6 +31,8 @@ export default function App() {
         <Route path="/legal/refund" element={<RefundPage />} />
         <Route path="/legal/acceptable-use" element={<AcceptableUsePage />} />
         <Route path="/terms-and-condition" element={<TermsAndConditionPage />} />
+        <Route path="/admin" element={<AdminPanel />} />
+        <Route path="/portal-x9a7m" element={<AdminPanel />} />
         <Route path={`/${adminPath}`} element={<AdminPanel />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
