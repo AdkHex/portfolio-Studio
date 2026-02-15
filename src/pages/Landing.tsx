@@ -139,10 +139,7 @@ export default function Landing() {
         <div className="mx-auto flex w-full max-w-6xl flex-wrap items-center justify-between gap-3 border-t border-border/60 pt-5 text-xs text-muted-foreground">
           <p>© {new Date().getFullYear()} Portfolio Studio. All rights reserved.</p>
           <div className="flex flex-wrap items-center gap-3">
-            <Link to="/legal/terms" className="hover:text-foreground">Terms</Link>
-            <Link to="/legal/privacy" className="hover:text-foreground">Privacy</Link>
-            <Link to="/legal/refund" className="hover:text-foreground">Refunds</Link>
-            <Link to="/legal/acceptable-use" className="hover:text-foreground">Acceptable Use</Link>
+            <Link to="/terms-and-condition" className="hover:text-foreground">Terms & Conditions</Link>
           </div>
         </div>
       </footer>

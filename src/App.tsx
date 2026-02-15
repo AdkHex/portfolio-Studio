@@ -10,6 +10,7 @@ import TermsPage from "./pages/legal/TermsPage";
 import PrivacyPage from "./pages/legal/PrivacyPage";
 import RefundPage from "./pages/legal/RefundPage";
 import AcceptableUsePage from "./pages/legal/AcceptableUsePage";
+import TermsAndConditionPage from "./pages/legal/TermsAndConditionPage";
 
 const adminPath = (import.meta.env.VITE_ADMIN_PATH || "/portal-x9a7m").replace(/^\/+/, "");
 
@@ -29,6 +30,7 @@ export default function App() {
         <Route path="/legal/privacy" element={<PrivacyPage />} />
         <Route path="/legal/refund" element={<RefundPage />} />
         <Route path="/legal/acceptable-use" element={<AcceptableUsePage />} />
+        <Route path="/terms-and-condition" element={<TermsAndConditionPage />} />
         <Route path={`/${adminPath}`} element={<AdminPanel />} />
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

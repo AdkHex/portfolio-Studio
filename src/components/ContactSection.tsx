@@ -160,10 +160,7 @@ const ContactSection = ({ settings, siteSlug }: Props) => {
         <div className="flex flex-wrap items-center gap-3">
           <p>{settings.footerText}</p>
           <span className="hidden text-border sm:inline">|</span>
-          <Link to="/legal/terms" className="hover:text-foreground">Terms</Link>
-          <Link to="/legal/privacy" className="hover:text-foreground">Privacy</Link>
-          <Link to="/legal/refund" className="hover:text-foreground">Refunds</Link>
-          <Link to="/legal/acceptable-use" className="hover:text-foreground">Acceptable Use</Link>
+          <Link to="/terms-and-condition" className="hover:text-foreground">Terms & Conditions</Link>
         </div>
       </div>
     </footer>
